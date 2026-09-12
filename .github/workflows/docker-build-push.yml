@@ -1,4 +1,4 @@
-name: Build & Push Simulator Image
+name: Build & Push Docker Image
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_IMAGE: devopsinsiders/axion-data-simulator
+  DOCKER_IMAGE: ${{ secrets.ACR_LOGIN_SERVER }}/axion-data-simulator
 
 jobs:
   build-and-push:
@@ -23,10 +23,11 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -35,7 +36,7 @@ jobs:
             type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
